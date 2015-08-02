@@ -66,19 +66,28 @@
 	'use strict';
 
 	var React = __webpack_require__(2);
-	var AppActions = __webpack_require__(158);
+	var Catalog = __webpack_require__(164);
+	var Cart = __webpack_require__(168);
 
 	var App = React.createClass({
 	    displayName: 'App',
 
-	    handler: function handler() {
-	        AppActions.addItem('this is an item');
-	    },
 	    render: function render() {
 	        return React.createElement(
-	            'h1',
-	            { onClick: this.handler },
-	            ' My App '
+	            'div',
+	            null,
+	            React.createElement(
+	                'h1',
+	                null,
+	                'Lets Shop'
+	            ),
+	            React.createElement(Catalog, null),
+	            React.createElement(
+	                'h1',
+	                null,
+	                'Cart'
+	            ),
+	            React.createElement(Cart, null)
 	        );
 	    }
 	});
@@ -20877,6 +20886,745 @@
 
 	module.exports = invariant;
 
+
+/***/ },
+/* 164 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by youngmoon on 8/2/15.
+	 */
+
+	'use strict';
+
+	var React = __webpack_require__(2);
+	var AppStore = __webpack_require__(165);
+	var AddToCart = __webpack_require__(167);
+
+	function getCatalog() {
+	    return { items: AppStore.getCatalog() };
+	}
+	var Catalog = React.createClass({
+	    displayName: 'Catalog',
+
+	    getInitialState: function getInitialState() {
+	        return getCatalog();
+	    },
+	    render: function render() {
+	        var items = this.state.items.map(function (item) {
+	            return React.createElement(
+	                'tr',
+	                { key: item.id },
+	                React.createElement(
+	                    'td',
+	                    null,
+	                    item.title
+	                ),
+	                React.createElement(
+	                    'td',
+	                    null,
+	                    '$',
+	                    item.cost
+	                ),
+	                React.createElement(
+	                    'td',
+	                    null,
+	                    React.createElement(AddToCart, { item: item })
+	                )
+	            );
+	        });
+
+	        return React.createElement(
+	            'table',
+	            { className: 'table table-hover' },
+	            items
+	        );
+	    }
+	});
+
+	module.exports = Catalog;
+
+/***/ },
+/* 165 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by youngmoon on 8/2/15.
+	 */
+	'use strict';
+
+	var AppDispatcher = __webpack_require__(160);
+	var AppConstants = __webpack_require__(159);
+	var assign = __webpack_require__(14);
+	var EventEmitter = __webpack_require__(166).EventEmitter;
+
+	var CHANGE_EVENT = 'change';
+
+	var _catalog = [];
+
+	for (var i = 0; i < 10; i++) {
+	    _catalog.push({
+	        id: 'Widget',
+	        title: 'Widget #' + i,
+	        summary: 'This is an awesome widget',
+	        description: 'What what how',
+	        cost: i
+	    });
+	}
+
+	var _cartItems = [];
+
+	function _removeItem(index) {
+	    _cartItems[index].inCart = false;
+	    _cartItems.splice(index, i);
+	}
+
+	function _increaseItem(index) {
+	    _cartItems[index].qty++;
+	}
+
+	function _decreaseItem(index) {
+	    if (_cartItems[index].qty > 1) {
+	        _cartItems[index].qty--;
+	    } else {
+	        _removeItem(index);
+	    }
+	}
+
+	function _addItem(item) {
+	    if (!item.inCart) {
+	        item['gty'] = 1;
+	        item['inCart'] = true;
+	        _cartItems.push(item);
+	    } else {
+	        _cartItems.forEach(function (cartItem, i) {
+	            if (cartItem.id == item.id) {
+	                _increaseItem(i);
+	            }
+	        });
+	    }
+	}
+
+	function _cartTotals() {
+	    var qty = 0,
+	        total = 0;
+
+	    _cartItems.forEach(function (cartItem) {
+	        qty += cartItem.qty;
+	        total += cartItem.qty * cartItem.cost;
+	    });
+
+	    return {
+	        qty: qty,
+	        total: total
+	    };
+	}
+
+	var AppStore = assign(EventEmitter.prototype, {
+	    emitChange: function emitChange() {
+	        this.emit(CHANGE_EVENT);
+	    },
+
+	    addChangeListener: function addChangeListener(callback) {
+	        this.on(CHANGE_EVENT, callback);
+	    },
+
+	    removeChangeListener: function removeChangeListener(callback) {
+	        this.removeListener(CHANGE_EVENT, callback);
+	    },
+
+	    getCart: function getCart() {
+	        return _cartItems;
+	    },
+
+	    getCatalog: function getCatalog() {
+	        return _catalog;
+	    },
+
+	    getCartTotals: function getCartTotals() {
+	        return _cartTotals();
+	    },
+
+	    dispatcherIndex: AppDispatcher.register(function (payload) {
+	        var action = payload.action; // this is our action from handleViewAction
+	        switch (action.actionType) {
+	            case AppConstants.ADD_ITEM:
+	                _addItem(payload.action.item);
+	                break;
+
+	            case AppConstants.REMOVE_ITEM:
+	                _removeItem(payload.action.index);
+	                break;
+
+	            case AppConstants.INCREASE_ITEM:
+	                _increaseItem(payload.action.index);
+	                break;
+
+	            case AppConstants.DECREASE_ITEM:
+	                _decreaseItem(payload.action.index);
+	                break;
+	        }
+	        AppStore.emitChange();
+
+	        return true;
+	    })
+	});
+
+	module.exports = AppStore;
+
+/***/ },
+/* 166 */
+/***/ function(module, exports) {
+
+	// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	function EventEmitter() {
+	  this._events = this._events || {};
+	  this._maxListeners = this._maxListeners || undefined;
+	}
+	module.exports = EventEmitter;
+
+	// Backwards-compat with node 0.10.x
+	EventEmitter.EventEmitter = EventEmitter;
+
+	EventEmitter.prototype._events = undefined;
+	EventEmitter.prototype._maxListeners = undefined;
+
+	// By default EventEmitters will print a warning if more than 10 listeners are
+	// added to it. This is a useful default which helps finding memory leaks.
+	EventEmitter.defaultMaxListeners = 10;
+
+	// Obviously not all Emitters should be limited to 10. This function allows
+	// that to be increased. Set to zero for unlimited.
+	EventEmitter.prototype.setMaxListeners = function(n) {
+	  if (!isNumber(n) || n < 0 || isNaN(n))
+	    throw TypeError('n must be a positive number');
+	  this._maxListeners = n;
+	  return this;
+	};
+
+	EventEmitter.prototype.emit = function(type) {
+	  var er, handler, len, args, i, listeners;
+
+	  if (!this._events)
+	    this._events = {};
+
+	  // If there is no 'error' event listener then throw.
+	  if (type === 'error') {
+	    if (!this._events.error ||
+	        (isObject(this._events.error) && !this._events.error.length)) {
+	      er = arguments[1];
+	      if (er instanceof Error) {
+	        throw er; // Unhandled 'error' event
+	      }
+	      throw TypeError('Uncaught, unspecified "error" event.');
+	    }
+	  }
+
+	  handler = this._events[type];
+
+	  if (isUndefined(handler))
+	    return false;
+
+	  if (isFunction(handler)) {
+	    switch (arguments.length) {
+	      // fast cases
+	      case 1:
+	        handler.call(this);
+	        break;
+	      case 2:
+	        handler.call(this, arguments[1]);
+	        break;
+	      case 3:
+	        handler.call(this, arguments[1], arguments[2]);
+	        break;
+	      // slower
+	      default:
+	        len = arguments.length;
+	        args = new Array(len - 1);
+	        for (i = 1; i < len; i++)
+	          args[i - 1] = arguments[i];
+	        handler.apply(this, args);
+	    }
+	  } else if (isObject(handler)) {
+	    len = arguments.length;
+	    args = new Array(len - 1);
+	    for (i = 1; i < len; i++)
+	      args[i - 1] = arguments[i];
+
+	    listeners = handler.slice();
+	    len = listeners.length;
+	    for (i = 0; i < len; i++)
+	      listeners[i].apply(this, args);
+	  }
+
+	  return true;
+	};
+
+	EventEmitter.prototype.addListener = function(type, listener) {
+	  var m;
+
+	  if (!isFunction(listener))
+	    throw TypeError('listener must be a function');
+
+	  if (!this._events)
+	    this._events = {};
+
+	  // To avoid recursion in the case that type === "newListener"! Before
+	  // adding it to the listeners, first emit "newListener".
+	  if (this._events.newListener)
+	    this.emit('newListener', type,
+	              isFunction(listener.listener) ?
+	              listener.listener : listener);
+
+	  if (!this._events[type])
+	    // Optimize the case of one listener. Don't need the extra array object.
+	    this._events[type] = listener;
+	  else if (isObject(this._events[type]))
+	    // If we've already got an array, just append.
+	    this._events[type].push(listener);
+	  else
+	    // Adding the second element, need to change to array.
+	    this._events[type] = [this._events[type], listener];
+
+	  // Check for listener leak
+	  if (isObject(this._events[type]) && !this._events[type].warned) {
+	    var m;
+	    if (!isUndefined(this._maxListeners)) {
+	      m = this._maxListeners;
+	    } else {
+	      m = EventEmitter.defaultMaxListeners;
+	    }
+
+	    if (m && m > 0 && this._events[type].length > m) {
+	      this._events[type].warned = true;
+	      console.error('(node) warning: possible EventEmitter memory ' +
+	                    'leak detected. %d listeners added. ' +
+	                    'Use emitter.setMaxListeners() to increase limit.',
+	                    this._events[type].length);
+	      if (typeof console.trace === 'function') {
+	        // not supported in IE 10
+	        console.trace();
+	      }
+	    }
+	  }
+
+	  return this;
+	};
+
+	EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+	EventEmitter.prototype.once = function(type, listener) {
+	  if (!isFunction(listener))
+	    throw TypeError('listener must be a function');
+
+	  var fired = false;
+
+	  function g() {
+	    this.removeListener(type, g);
+
+	    if (!fired) {
+	      fired = true;
+	      listener.apply(this, arguments);
+	    }
+	  }
+
+	  g.listener = listener;
+	  this.on(type, g);
+
+	  return this;
+	};
+
+	// emits a 'removeListener' event iff the listener was removed
+	EventEmitter.prototype.removeListener = function(type, listener) {
+	  var list, position, length, i;
+
+	  if (!isFunction(listener))
+	    throw TypeError('listener must be a function');
+
+	  if (!this._events || !this._events[type])
+	    return this;
+
+	  list = this._events[type];
+	  length = list.length;
+	  position = -1;
+
+	  if (list === listener ||
+	      (isFunction(list.listener) && list.listener === listener)) {
+	    delete this._events[type];
+	    if (this._events.removeListener)
+	      this.emit('removeListener', type, listener);
+
+	  } else if (isObject(list)) {
+	    for (i = length; i-- > 0;) {
+	      if (list[i] === listener ||
+	          (list[i].listener && list[i].listener === listener)) {
+	        position = i;
+	        break;
+	      }
+	    }
+
+	    if (position < 0)
+	      return this;
+
+	    if (list.length === 1) {
+	      list.length = 0;
+	      delete this._events[type];
+	    } else {
+	      list.splice(position, 1);
+	    }
+
+	    if (this._events.removeListener)
+	      this.emit('removeListener', type, listener);
+	  }
+
+	  return this;
+	};
+
+	EventEmitter.prototype.removeAllListeners = function(type) {
+	  var key, listeners;
+
+	  if (!this._events)
+	    return this;
+
+	  // not listening for removeListener, no need to emit
+	  if (!this._events.removeListener) {
+	    if (arguments.length === 0)
+	      this._events = {};
+	    else if (this._events[type])
+	      delete this._events[type];
+	    return this;
+	  }
+
+	  // emit removeListener for all listeners on all events
+	  if (arguments.length === 0) {
+	    for (key in this._events) {
+	      if (key === 'removeListener') continue;
+	      this.removeAllListeners(key);
+	    }
+	    this.removeAllListeners('removeListener');
+	    this._events = {};
+	    return this;
+	  }
+
+	  listeners = this._events[type];
+
+	  if (isFunction(listeners)) {
+	    this.removeListener(type, listeners);
+	  } else {
+	    // LIFO order
+	    while (listeners.length)
+	      this.removeListener(type, listeners[listeners.length - 1]);
+	  }
+	  delete this._events[type];
+
+	  return this;
+	};
+
+	EventEmitter.prototype.listeners = function(type) {
+	  var ret;
+	  if (!this._events || !this._events[type])
+	    ret = [];
+	  else if (isFunction(this._events[type]))
+	    ret = [this._events[type]];
+	  else
+	    ret = this._events[type].slice();
+	  return ret;
+	};
+
+	EventEmitter.listenerCount = function(emitter, type) {
+	  var ret;
+	  if (!emitter._events || !emitter._events[type])
+	    ret = 0;
+	  else if (isFunction(emitter._events[type]))
+	    ret = 1;
+	  else
+	    ret = emitter._events[type].length;
+	  return ret;
+	};
+
+	function isFunction(arg) {
+	  return typeof arg === 'function';
+	}
+
+	function isNumber(arg) {
+	  return typeof arg === 'number';
+	}
+
+	function isObject(arg) {
+	  return typeof arg === 'object' && arg !== null;
+	}
+
+	function isUndefined(arg) {
+	  return arg === void 0;
+	}
+
+
+/***/ },
+/* 167 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by youngmoon on 8/2/15.
+	 */
+
+	'use strict';
+
+	var React = __webpack_require__(2);
+	var AppActions = __webpack_require__(158);
+
+	var AddToCart = React.createClass({
+	    displayName: 'AddToCart',
+
+	    handler: function handler() {
+	        AppActions.addItem(this.props.item);
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            'button',
+	            { onClick: this.handler },
+	            'Add to Cart'
+	        );
+	    }
+	});
+
+	module.exports = AddToCart;
+
+/***/ },
+/* 168 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by youngmoon on 8/2/15.
+	 */
+
+	'use strict';
+
+	var React = __webpack_require__(2);
+	var AppStore = __webpack_require__(165);
+	var RemoveFromCart = __webpack_require__(169);
+	var Increase = __webpack_require__(170);
+	var Decrease = __webpack_require__(171);
+
+	function cartItems() {
+	    return { items: AppStore.getCart() };
+	}
+	var Cart = React.createClass({
+	    displayName: 'Cart',
+
+	    getInitialState: function getInitialState() {
+	        return cartItems();
+	    },
+	    componentWillMount: function componentWillMount() {
+	        AppStore.addChangeListener(this._onChange);
+	    },
+	    _onChange: function _onChange() {
+	        this.setState(cartItems());
+	    },
+	    render: function render() {
+	        var total = 0;
+	        var items = this.state.items.map(function (item, i) {
+	            var subtotal = item.cost * item.qty;
+	            total += subtotal;
+	            return React.createElement(
+	                'tr',
+	                { key: i },
+	                React.createElement(
+	                    'td',
+	                    null,
+	                    React.createElement(RemoveFromCart, { index: i })
+	                ),
+	                React.createElement(
+	                    'td',
+	                    null,
+	                    item.title
+	                ),
+	                React.createElement(
+	                    'td',
+	                    null,
+	                    item.qty
+	                ),
+	                React.createElement(
+	                    'td',
+	                    null,
+	                    React.createElement(Increase, { index: i }),
+	                    React.createElement(Decrease, { index: i })
+	                ),
+	                React.createElement(
+	                    'td',
+	                    null,
+	                    '$',
+	                    subtotal
+	                )
+	            );
+	        });
+
+	        return React.createElement(
+	            'table',
+	            { className: 'table table-hover' },
+	            React.createElement(
+	                'thead',
+	                null,
+	                React.createElement(
+	                    'tr',
+	                    null,
+	                    React.createElement('th', null),
+	                    React.createElement(
+	                        'th',
+	                        null,
+	                        'Item'
+	                    ),
+	                    React.createElement(
+	                        'th',
+	                        null,
+	                        'Qty'
+	                    ),
+	                    React.createElement('th', null),
+	                    React.createElement(
+	                        'th',
+	                        null,
+	                        'Subtotal'
+	                    )
+	                )
+	            ),
+	            React.createElement(
+	                'tbody',
+	                null,
+	                items
+	            ),
+	            React.createElement(
+	                'tfoot',
+	                null,
+	                React.createElement(
+	                    'tr',
+	                    null,
+	                    React.createElement(
+	                        'td',
+	                        { colSpan: '4', className: 'text-right' },
+	                        'Total'
+	                    ),
+	                    React.createElement(
+	                        'td',
+	                        null,
+	                        '$',
+	                        total
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = Cart;
+
+/***/ },
+/* 169 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by youngmoon on 8/2/15.
+	 */
+
+	'use strict';
+
+	var React = __webpack_require__(2);
+	var AppActions = __webpack_require__(158);
+
+	var RemoveToCart = React.createClass({
+	    displayName: 'RemoveToCart',
+
+	    handler: function handler() {
+	        AppActions.removeItem(this.props.index);
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            'button',
+	            { onClick: this.handler },
+	            'X'
+	        );
+	    }
+	});
+
+	module.exports = RemoveToCart;
+
+/***/ },
+/* 170 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by youngmoon on 8/2/15.
+	 */
+
+	'use strict';
+
+	var React = __webpack_require__(2);
+	var AppActions = __webpack_require__(158);
+
+	var IncreaseToCart = React.createClass({
+	    displayName: 'IncreaseToCart',
+
+	    handler: function handler() {
+	        AppActions.increaseItem(this.props.index);
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            'button',
+	            { onClick: this.handler },
+	            '+'
+	        );
+	    }
+	});
+
+	module.exports = IncreaseToCart;
+
+/***/ },
+/* 171 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by youngmoon on 8/2/15.
+	 */
+
+	'use strict';
+
+	var React = __webpack_require__(2);
+	var AppActions = __webpack_require__(158);
+
+	var DecreaseToCart = React.createClass({
+	    displayName: 'DecreaseToCart',
+
+	    handler: function handler() {
+	        AppActions.decreaseItem(this.props.index);
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            'button',
+	            { onClick: this.handler },
+	            '-'
+	        );
+	    }
+	});
+
+	module.exports = DecreaseToCart;
 
 /***/ }
 /******/ ]);
