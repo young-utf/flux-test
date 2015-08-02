@@ -3,9 +3,9 @@
  */
 
 module.exports = {
-    entry: "./app/app.js",
+    entry: "./app/js/app.js",
     output: {
-        filename: 'public/bundle.js'
+        filename: 'app/bundle.js'
     },
     watch: true,
     module: {

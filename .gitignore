@@ -1,4 +1,4 @@
-node_modeuls/
+node_modules/
 bower_components/
-public/bundles.js
+app/bundle.js
 .idea/
