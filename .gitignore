@@ -1,0 +1,4 @@
+node_modeuls/
+bower_components/
+public/bundles.js
+.idea/
