@@ -3,7 +3,7 @@
  */
 
 var React = require('react');
-var AppStore= require('../stores/app-store');
+var AppStore= require('../../stores/app-store');
 var RemoveFromCart = require('./app-removefromcart');
 var Increase = require('./app-increaseitem');
 var Decrease = require('./app-decreaseitem');

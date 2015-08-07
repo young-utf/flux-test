@@ -3,7 +3,7 @@
  */
 
 var React = require('react');
-var AppStore= require('../stores/app-store');
+var AppStore= require('../../stores/app-store');
 var AddToCart = require('./app-addtocart');
 
 function getCatalog () {
@@ -21,7 +21,7 @@ var Catalog = React.createClass({
                     <td>${item.cost}</td>
                     <td><AddToCart item={item} /></td>
                 </tr>
-            )
+            );
         });
 
 		return (

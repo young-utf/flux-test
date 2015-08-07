@@ -3,19 +3,19 @@
  */
 
 var React = require('react');
-var AppActions = require('../actions/app-actions');
+var AppActions = require('../../actions/app-actions');
 
-var RemoveToCart = React.createClass({
+var IncreaseToCart = React.createClass({
     handler: function () {
-        AppActions.removeItem(this.props.index);
+        AppActions.increaseItem(this.props.index);
     },
     render: function () {
         return (
             <button onClick={this.handler}>
-                X
+                +
             </button>
         );
     }
 });
 
-module.exports = RemoveToCart;
+module.exports = IncreaseToCart;

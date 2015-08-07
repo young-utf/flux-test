@@ -3,19 +3,19 @@
  */
 
 var React = require('react');
-var AppActions = require('../actions/app-actions');
+var AppActions = require('../../actions/app-actions');
 
-var DecreaseToCart = React.createClass({
+var AddToCart = React.createClass({
     handler: function () {
-        AppActions.decreaseItem(this.props.index);
+        AppActions.addItem(this.props.item);
     },
     render: function () {
         return (
             <button onClick={this.handler}>
-                -
+                Add to Cart
             </button>
         );
     }
 });
 
-module.exports = DecreaseToCart;
+module.exports = AddToCart;

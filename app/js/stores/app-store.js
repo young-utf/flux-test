@@ -12,15 +12,17 @@ var _catalog = [];
 
 for (var i = 0; i < 10; i++) {
     _catalog.push({
-        id: 'Widget',
+        id: 'Widget' + i,
         title: 'Widget #' + i,
         summary: 'This is an awesome widget',
         description: 'What what how',
-        cost: i
+        cost: i,
+        img: '/assets/product.png'
     });
 }
 
 var _cartItems = [];
+
 
 function _removeItem (index) {
     _cartItems[index].inCart = false;
@@ -41,7 +43,7 @@ function _decreaseItem (index) {
 
 function _addItem (item) {
     if (!item.inCart) {
-        item['gty'] = 1;
+        item['qty'] = 1;
         item['inCart'] = true;
         _cartItems.push(item);
     } else {
@@ -95,7 +97,7 @@ var AppStore = assign(EventEmitter.prototype, {
 
     dispatcherIndex: AppDispatcher.register(function (payload) {
         var action = payload.action; // this is our action from handleViewAction
-        switch(action.actionType){
+        switch(action.actionsType){
             case AppConstants.ADD_ITEM:
                 _addItem(payload.action.item);
                 break;

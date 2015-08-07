@@ -1,4 +1,5 @@
 node_modules/
 bower_components/
 app/bundle.js
-.idea/
+.idea
+.idea/workspace.xml
